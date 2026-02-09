@@ -1,143 +1,168 @@
 import React from "react";
 import {
+	ActivityIndicator,
 	ScrollView,
 	StyleSheet,
 	Text,
 	useWindowDimensions,
 	View,
 } from "react-native";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BalanceCard } from "../features/money/components/BalanceCard";
 import { ExtraExpensesCard } from "../features/money/components/ExtraExpensesCard";
 import { FixedExpensesCard } from "../features/money/components/FixedExpensesCard";
 import { MonthlyIncomeCard } from "../features/money/components/MonthlyIncomeCard";
 import { SavingsCard } from "../features/money/components/SavingsCard";
 
-import type { MonthKey } from "../features/money/utils/moneyFormat";
-
-// ovde uveži svoj hook/store/service
-// import { useMoneyManager } from "../hooks/useMoneyManager";
+import { useMoneyManager } from "../features/money/hooks/useMoneyManager";
 
 export function Money() {
 	const { width } = useWindowDimensions();
 	const isLg = width >= 1024;
 
-	// TODO: zameni ovim: const vm = useMoneyManager()
-	const error: string | null = null;
+	const {
+		// ui
+		loading,
+		error,
 
-	const month: MonthKey = "2026-02";
-	const setMonth = (_m: MonthKey) => {};
+		// month
+		month,
+		setMonth,
 
-	const monthlyIncome = 0;
-	const saveMonthlyIncome = (_n: number) => {};
+		// monthly income
+		monthlyIncome,
+		saveMonthlyIncome,
 
-	const balance = 0;
-	const totalExpense = 0;
-	const fixedTotal = 0;
-	const savingsTotal = 0;
+		// totals + balance
+		balance,
+		totalExpense,
+		fixedTotal,
+		savingsTotal,
 
-	const fixedExpenses: any[] = [];
-	const fixedTitle = "";
-	const setFixedTitle = (_s: string) => {};
-	const fixedAmount = null as number | null;
-	const setFixedAmount = (_n: number | null) => {};
-	const addFixedExpense = () => {};
-	const deleteFixedExpense = (_id: string) => {};
+		// fixed
+		fixedExpenses,
+		fixedTitle,
+		setFixedTitle,
+		fixedAmount,
+		setFixedAmount,
+		addFixedExpense,
+		deleteFixedExpense,
 
-	const money = null as number | null;
-	const setMoney = (_n: number | null) => {};
-	const description = "";
-	const setDescription = (_s: string) => {};
-	const expenseTransactions: any[] = [];
-	const addExtraExpense = () => {};
-	const deleteTransaction = (_id: string) => {};
+		// extra expenses
+		money,
+		setMoney,
+		description,
+		setDescription,
+		expenseTransactions,
+		addExtraExpense,
+		deleteTransaction,
 
-	const savings: any[] = [];
-	const savingsAmount = null as number | null;
-	const setSavingsAmount = (_n: number | null) => {};
-	const savingsNote = "";
-	const setSavingsNote = (_s: string) => {};
-	const addSavings = () => {};
-	const deleteSavings = (_id: string) => {};
+		// savings
+		savings,
+		savingsAmount,
+		setSavingsAmount,
+		savingsNote,
+		setSavingsNote,
+		addSavings,
+		deleteSavings,
+	} = useMoneyManager();
+
+	if (loading) {
+		return (
+			<View style={[styles.page, styles.center]}>
+				<ActivityIndicator />
+			</View>
+		);
+	}
 
 	return (
-		<ScrollView contentContainerStyle={styles.page}>
-			<View style={styles.shell}>
-				<Text style={styles.h1}>Upravljanje Novcem</Text>
+		<SafeAreaView
+			style={{ flex: 1, backgroundColor: "#1E2838" }}
+			edges={["top"]}
+		>
+			<ScrollView contentContainerStyle={styles.page}>
+				<View style={styles.shell}>
+					<Text style={styles.h1}>Upravljanje Novcem</Text>
 
-				{!!error && (
-					<View style={styles.errorBox}>
-						<Text style={styles.errorText}>{error}</Text>
+					{!!error && (
+						<View style={styles.errorBox}>
+							<Text style={styles.errorText}>{error}</Text>
+						</View>
+					)}
+
+					<View style={isLg ? styles.row2 : styles.row1}>
+						<View style={isLg ? styles.col : styles.colFull}>
+							<MonthlyIncomeCard
+								month={month}
+								onMonthChange={setMonth}
+								monthlyIncome={monthlyIncome}
+								onSave={saveMonthlyIncome}
+							/>
+						</View>
+
+						<View style={isLg ? styles.col : styles.colFull}>
+							<BalanceCard
+								balance={balance}
+								totalIncome={monthlyIncome}
+								totalExpense={totalExpense + fixedTotal + savingsTotal}
+							/>
+						</View>
 					</View>
-				)}
 
-				<View style={isLg ? styles.row2 : styles.row1}>
-					<View style={isLg ? styles.col : styles.colFull}>
-						<MonthlyIncomeCard
-							month={month}
-							onMonthChange={setMonth}
-							monthlyIncome={monthlyIncome}
-							onSave={saveMonthlyIncome}
-						/>
+					<View style={isLg ? styles.row2 : styles.row1}>
+						<View style={isLg ? styles.col : styles.colFull}>
+							<FixedExpensesCard
+								items={fixedExpenses}
+								title={fixedTitle}
+								setTitle={setFixedTitle}
+								amount={fixedAmount}
+								setAmount={setFixedAmount}
+								onAdd={addFixedExpense}
+								onDelete={deleteFixedExpense}
+								total={fixedTotal}
+							/>
+						</View>
+
+						<View style={isLg ? styles.col : styles.colFull}>
+							<ExtraExpensesCard
+								money={money}
+								description={description}
+								onMoneyChange={setMoney}
+								onDescriptionChange={setDescription}
+								items={expenseTransactions}
+								onAdd={addExtraExpense}
+								onDelete={deleteTransaction}
+								total={totalExpense}
+							/>
+						</View>
 					</View>
 
-					<View style={isLg ? styles.col : styles.colFull}>
-						<BalanceCard
-							balance={balance}
-							totalIncome={monthlyIncome}
-							totalExpense={totalExpense + fixedTotal + savingsTotal}
+					<View style={styles.row1}>
+						<SavingsCard
+							items={savings.map((item) => ({
+								...item,
+								note: item.note ?? undefined,
+							}))}
+							amount={savingsAmount}
+							setAmount={setSavingsAmount}
+							note={savingsNote}
+							setNote={setSavingsNote}
+							onAdd={addSavings}
+							onDelete={deleteSavings}
+							total={savingsTotal}
 						/>
 					</View>
 				</View>
-
-				<View style={isLg ? styles.row2 : styles.row1}>
-					<View style={isLg ? styles.col : styles.colFull}>
-						<FixedExpensesCard
-							items={fixedExpenses}
-							title={fixedTitle}
-							setTitle={setFixedTitle}
-							amount={fixedAmount}
-							setAmount={setFixedAmount}
-							onAdd={addFixedExpense}
-							onDelete={deleteFixedExpense}
-							total={fixedTotal}
-						/>
-					</View>
-
-					<View style={isLg ? styles.col : styles.colFull}>
-						<ExtraExpensesCard
-							money={money}
-							description={description}
-							onMoneyChange={setMoney}
-							onDescriptionChange={setDescription}
-							items={expenseTransactions}
-							onAdd={addExtraExpense}
-							onDelete={deleteTransaction}
-							total={totalExpense}
-						/>
-					</View>
-				</View>
-
-				<View style={styles.row1}>
-					<SavingsCard
-						items={savings}
-						amount={savingsAmount}
-						setAmount={setSavingsAmount}
-						note={savingsNote}
-						setNote={setSavingsNote}
-						onAdd={addSavings}
-						onDelete={deleteSavings}
-						total={savingsTotal}
-					/>
-				</View>
-			</View>
-		</ScrollView>
+			</ScrollView>
+		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
 	page: { padding: 16, paddingBottom: 24, backgroundColor: "#1E2838" },
 	shell: { width: "100%", maxWidth: 1152, alignSelf: "center" },
+
+	center: { flex: 1, alignItems: "center", justifyContent: "center" },
 
 	h1: {
 		fontSize: 30,
@@ -163,4 +188,5 @@ const styles = StyleSheet.create({
 	col: { flex: 1, minWidth: 0 },
 	colFull: { width: "100%" },
 });
+
 export default Money;

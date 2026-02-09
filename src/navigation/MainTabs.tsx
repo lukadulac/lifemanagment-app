@@ -1,30 +1,70 @@
+import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import React from "react";
-
+import { Account } from "../pages/Account";
 import { Dashboard } from "../pages/Dashboard";
 import { Money } from "../pages/Money";
-import { Settings } from "../pages/Settings";
 import { Time } from "../pages/Time";
 import { TimeTable } from "../pages/TimeTable";
 
-export type MainTabParamList = {
-	Dashboard: undefined;
-	Money: undefined;
-	Time: undefined;
-	Timetable: undefined;
-	Settings: undefined;
-};
+const Tab = createBottomTabNavigator();
 
-const Tab = createBottomTabNavigator<MainTabParamList>();
-
-export const MainTabs = () => {
+export function MainTabs() {
 	return (
-		<Tab.Navigator screenOptions={{ headerShown: true }}>
+		<Tab.Navigator
+			screenOptions={({ route }) => ({
+				headerShown: false,
+
+				tabBarStyle: {
+					backgroundColor: "#111827",
+					borderTopColor: "#374151",
+					borderTopWidth: 1,
+					height: 84,
+					paddingBottom: 10,
+					paddingTop: 8,
+					paddingLeft: 10,
+					paddingRight: 10,
+				},
+
+				tabBarActiveTintColor: "#34D399",
+				tabBarInactiveTintColor: "#9CA3AF",
+
+				tabBarLabelStyle: {
+					fontSize: 11,
+					fontWeight: "600",
+				},
+
+				tabBarIcon: ({ focused, color, size }) => {
+					let iconName: keyof typeof Ionicons.glyphMap;
+
+					switch (route.name) {
+						case "Dashboard":
+							iconName = focused ? "speedometer" : "speedometer-outline";
+							break;
+						case "Money":
+							iconName = focused ? "wallet" : "wallet-outline";
+							break;
+						case "Time":
+							iconName = focused ? "time" : "time-outline";
+							break;
+						case "Timetable":
+							iconName = focused ? "calendar" : "calendar-outline";
+							break;
+						case "Account":
+							iconName = focused ? "person" : "person-outline";
+							break;
+						default:
+							iconName = "ellipse";
+					}
+
+					return <Ionicons name={iconName} size={size} color={color} />;
+				},
+			})}
+		>
 			<Tab.Screen name="Dashboard" component={Dashboard} />
 			<Tab.Screen name="Money" component={Money} />
 			<Tab.Screen name="Time" component={Time} />
 			<Tab.Screen name="Timetable" component={TimeTable} />
-			<Tab.Screen name="Settings" component={Settings} />
+			<Tab.Screen name="Account" component={Account} />
 		</Tab.Navigator>
 	);
-};
+}
