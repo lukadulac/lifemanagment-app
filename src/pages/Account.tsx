@@ -4,106 +4,85 @@ import {
 	Pressable,
 	StyleSheet,
 	Text,
-	TextInput,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ProfilePhotoSection from "../auth/components/user/ProfilePhotoSection";
+import UsernameEditModal from "../auth/components/user/UsernameEditModal";
 import { supabase } from "../lib/supabaseClient";
 
 export function Account() {
+	const [editOpen, setEditOpen] = useState(false);
 	const [username, setUsername] = useState("");
+	const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 	const [current, setCurrent] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
-	const [saving, setSaving] = useState(false);
 	const [msg, setMsg] = useState<string | null>(null);
 	const [err, setErr] = useState<string | null>(null);
 
 	useEffect(() => {
+		let mounted = true;
+
 		(async () => {
-			setLoading(true);
-			setErr(null);
-			setMsg(null);
+			try {
+				setLoading(true);
+				setErr(null);
+				setMsg(null);
 
-			const { data: sess } = await supabase.auth.getSession();
-			const userId = sess.session?.user.id;
-			const email = sess.session?.user.email;
+				const { data: sess, error: sessErr } = await supabase.auth.getSession();
+				if (sessErr) throw sessErr;
 
-			if (!userId) {
-				setErr("Nisi ulogovan.");
-				setLoading(false);
-				return;
-			}
+				const userId = sess.session?.user.id;
+				const email = sess.session?.user.email ?? null;
 
-			// učitaj postojeći username
-			const { data, error } = await supabase
-				.from("profiles")
-				.select("username")
-				.eq("id", userId)
-				.maybeSingle();
+				if (!userId) {
+					if (!mounted) return;
+					setErr("Nisi ulogovan.");
+					return;
+				}
 
-			if (!error) {
-				setCurrent(data?.username ?? null);
-				setUsername(data?.username ?? "");
-			}
-
-			// (opciono) upiši email u profiles ako fali (da radi username login)
-			if (email) {
-				await supabase
+				// 1) učitaj profil (username + avatar_url)
+				const { data: profile, error: profileErr } = await supabase
 					.from("profiles")
-					.upsert({ id: userId, email }, { onConflict: "id" });
+					.select("username, avatar_url, email")
+					.eq("id", userId)
+					.maybeSingle();
+
+				if (profileErr) throw profileErr;
+
+				if (!mounted) return;
+
+				setCurrent(profile?.username ?? null);
+				setUsername(profile?.username ?? "");
+				setAvatarUrl(profile?.avatar_url ?? null);
+
+				console.log("LOADED AVATAR URL:", profile?.avatar_url);
+
+				// 2) opcionalno: upiši email u profiles ako fali
+				if (email && profile?.email !== email) {
+					const { error: upErr } = await supabase
+						.from("profiles")
+						.upsert({ id: userId, email }, { onConflict: "id" });
+
+					if (upErr) console.log("EMAIL UPSERT ERROR:", upErr);
+				}
+			} catch (e: any) {
+				console.log("ACCOUNT LOAD ERROR:", e);
+				if (!mounted) return;
+				setErr(e?.message ?? "Greška pri učitavanju profila.");
+			} finally {
+				if (!mounted) return;
+				setLoading(false);
 			}
-
-			setLoading(false);
 		})();
+
+		return () => {
+			mounted = false;
+		};
 	}, []);
-
-	const save = async () => {
-		setSaving(true);
-		setErr(null);
-		setMsg(null);
-
-		const u = username.trim().toLowerCase();
-
-		if (u.length < 3) {
-			setErr("Username mora imati bar 3 karaktera.");
-			setSaving(false);
-			return;
-		}
-		if (!/^[a-z0-9._]+$/.test(u)) {
-			setErr("Dozvoljeno: slova, brojevi, tačka i donja crta.");
-			setSaving(false);
-			return;
-		}
-
-		const { data: sess } = await supabase.auth.getSession();
-		const userId = sess.session?.user.id;
-		const email = sess.session?.user.email;
-
-		if (!userId) {
-			setErr("Nisi ulogovan.");
-			setSaving(false);
-			return;
-		}
-
-		// upsert u profiles (username + email)
-		const { error } = await supabase
-			.from("profiles")
-			.upsert({ id: userId, username: u, email }, { onConflict: "id" });
-
-		if (error) {
-			// unique violation username/email
-			setErr(
-				error.message.includes("duplicate")
-					? "Username je zauzet."
-					: error.message,
-			);
-		} else {
-			setCurrent(u);
-			setMsg("Username sačuvan ✅");
-		}
-
-		setSaving(false);
-	};
+	useEffect(() => {
+		console.log("AVATAR STATE:", avatarUrl);
+	}, [avatarUrl]);
 
 	if (loading) {
 		return (
@@ -119,35 +98,38 @@ export function Account() {
 			edges={["top"]}
 		>
 			<View style={styles.page}>
-				<Text style={styles.h1}>Account</Text>
+				<View style={styles.headerContainer}>
+					<Text style={styles.h1}>Hello {current ?? "there"}👋</Text>
+					<ProfilePhotoSection
+						avatarUrl={avatarUrl}
+						displayName={current}
+						onAvatarChanged={(url) => setAvatarUrl(url)}
+					/>
+				</View>
 
-				{err ? <Text style={styles.err}>{err}</Text> : null}
-				{msg ? <Text style={styles.ok}>{msg}</Text> : null}
+				<View style={styles.card}>
+					<View style={styles.rowBetween}>
+						<View>
+							<Text style={styles.labelSmall}>Username</Text>
+							<Text style={styles.value}>{current ?? "nije postavljen"}</Text>
+						</View>
 
-				<Text style={styles.label}>Username</Text>
-				<TextInput
-					value={username}
-					onChangeText={setUsername}
-					autoCapitalize="none"
-					style={styles.input}
+						<Pressable style={styles.editBtn} onPress={() => setEditOpen(true)}>
+							<Text style={styles.editBtnText}>Izmeni</Text>
+						</Pressable>
+					</View>
+				</View>
+
+				<UsernameEditModal
+					visible={editOpen}
+					onClose={() => setEditOpen(false)}
+					initialUsername={current}
+					onSaved={(u) => {
+						setCurrent(u);
+						setMsg("Username sačuvan ✅");
+					}}
 				/>
-
-				<Text style={styles.hint}>
-					Trenutni: {current ?? "nije postavljen"}
-				</Text>
-
-				<Pressable
-					onPress={save}
-					disabled={saving}
-					style={[styles.btn, saving && { opacity: 0.6 }]}
-				>
-					{saving ? (
-						<ActivityIndicator />
-					) : (
-						<Text style={styles.btnText}>Sačuvaj</Text>
-					)}
-				</Pressable>
-				<View style={{ marginTop: 24 }}>
+				<View style={{ marginTop: 16 }}>
 					<Pressable
 						accessibilityRole="button"
 						style={styles.btn2}
@@ -163,6 +145,12 @@ export function Account() {
 
 const styles = StyleSheet.create({
 	page: { flex: 1, padding: 16, backgroundColor: "#1E2838" },
+	headerContainer: {
+		flexDirection: "row",
+
+		justifyContent: "space-between",
+		marginBottom: 24,
+	},
 	center: { alignItems: "center", justifyContent: "center" },
 	h1: { color: "white", fontSize: 24, fontWeight: "800", marginBottom: 12 },
 
@@ -206,4 +194,30 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	btn2Text: { color: "#F87171", fontWeight: "800", fontSize: 18 },
+	card: {
+		borderWidth: 1,
+		borderColor: "#374151",
+		backgroundColor: "#111827",
+		borderRadius: 16,
+		padding: 14,
+		gap: 12,
+	},
+	cardTitle: { color: "white", fontSize: 16, fontWeight: "900" },
+	rowBetween: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+	},
+	labelSmall: { color: "#9CA3AF", fontWeight: "700" },
+	value: { color: "white", fontSize: 18, fontWeight: "800", marginTop: 2 },
+
+	editBtn: {
+		borderWidth: 1,
+		borderColor: "#4B5563",
+		backgroundColor: "#0F172A",
+		paddingHorizontal: 12,
+		paddingVertical: 10,
+		borderRadius: 12,
+	},
+	editBtnText: { color: "white", fontWeight: "900" },
 });
