@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { moneyService } from "../money.service";
 import type {
 	FixedExpense,
 	MonthKey,
@@ -6,7 +7,6 @@ import type {
 	Transaction,
 	TransactionInsert,
 } from "../money.types";
-import { moneyService } from "../money.service";
 
 const getMonthKey = (d = new Date()): MonthKey => {
 	const y = d.getFullYear();
@@ -44,9 +44,9 @@ export const useMoneyManager = () => {
 			setError(null);
 
 			const [tx, incomeRow, fixed, sav] = await Promise.all([
-				moneyService.fetchTransactions(),
+				moneyService.fetchTransactions(month),
 				moneyService.fetchMonthlyIncome(month),
-				moneyService.fetchFixedExpenses(),
+				moneyService.fetchFixedExpenses(month),
 				moneyService.fetchSavings(month),
 			]);
 
@@ -72,8 +72,10 @@ export const useMoneyManager = () => {
 				type,
 			};
 
-			const addedTransaction =
-				await moneyService.addTransaction(newTransaction);
+			const addedTransaction = await moneyService.addTransaction(
+				month,
+				newTransaction,
+			);
 			if (addedTransaction)
 				setTransactions([addedTransaction, ...transactions]);
 
@@ -112,6 +114,7 @@ export const useMoneyManager = () => {
 		try {
 			setError(null);
 			const added = await moneyService.addFixedExpense(
+				month,
 				fixedTitle.trim(),
 				fixedAmount,
 			);
