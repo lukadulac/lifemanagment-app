@@ -40,16 +40,16 @@ export function MainTabs() {
 						case "Dashboard":
 							iconName = focused ? "speedometer" : "speedometer-outline";
 							break;
-						case "Money":
+						case "Novac":
 							iconName = focused ? "wallet" : "wallet-outline";
 							break;
 						case "Time":
 							iconName = focused ? "time" : "time-outline";
 							break;
-						case "Timetable":
+						case "Vreme":
 							iconName = focused ? "calendar" : "calendar-outline";
 							break;
-						case "Account":
+						case "Nalog":
 							iconName = focused ? "person" : "person-outline";
 							break;
 						default:
@@ -61,10 +61,10 @@ export function MainTabs() {
 			})}
 		>
 			<Tab.Screen name="Dashboard" component={Dashboard} />
-			<Tab.Screen name="Money" component={Money} />
+			<Tab.Screen name="Novac" component={Money} />
 			<Tab.Screen name="Time" component={Time} />
-			<Tab.Screen name="Timetable" component={TimeTable} />
-			<Tab.Screen name="Account" component={Account} />
+			<Tab.Screen name="Vreme" component={TimeTable} />
+			<Tab.Screen name="Nalog" component={Account} />
 		</Tab.Navigator>
 	);
 }
