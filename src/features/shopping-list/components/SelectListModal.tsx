@@ -10,9 +10,21 @@ type Props = {
 	activeListId: string | null;
 	onClose: () => void;
 	onSelect: (listId: string) => void;
+	showDelete?: boolean;
+	deleteDisabled?: boolean;
+	onDeleteList?: () => void;
 };
 
-export function SelectListModal({ visible, lists, activeListId, onClose, onSelect }: Props) {
+export function SelectListModal({
+	visible,
+	lists,
+	activeListId,
+	onClose,
+	onSelect,
+	showDelete,
+	deleteDisabled,
+	onDeleteList,
+}: Props) {
 	return (
 		<Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
 			<View style={styles.modalBackdrop}>
@@ -35,6 +47,17 @@ export function SelectListModal({ visible, lists, activeListId, onClose, onSelec
 							</Pressable>
 						))}
 					</ScrollView>
+
+					{showDelete ? (
+						<Pressable
+							style={[styles.dangerBtn, styles.dangerBtnSpaced]}
+							onPress={onDeleteList}
+							disabled={deleteDisabled}
+						>
+							<Text style={styles.dangerBtnText}>Obrisi aktivnu listu</Text>
+						</Pressable>
+					) : null}
+
 					<View style={styles.modalActions}>
 						<Pressable style={styles.ghostBtn} onPress={onClose}>
 							<Text style={styles.ghostBtnText}>Zatvori</Text>

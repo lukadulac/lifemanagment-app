@@ -40,29 +40,6 @@ export const List = () => {
 						setMembersModalOpen(true);
 					}}
 					membersDisabled={!state.activeListId}
-					showDelete={
-						!!state.activeList &&
-						!!state.currentUserId &&
-						state.activeList.ownerId === state.currentUserId
-					}
-					deleteDisabled={state.saving || !state.activeListId}
-					onDeleteList={() => {
-						if (!state.activeList) return;
-						Alert.alert(
-							"Obrisi listu",
-							`Da li sigurno zelis da obrises listu \"${state.activeList.name}\"?`,
-							[
-								{ text: "Odustani", style: "cancel" },
-								{
-									text: "Obrisi",
-									style: "destructive",
-									onPress: () => {
-										state.deleteActiveList().catch(() => undefined);
-									},
-								},
-							],
-						);
-					}}
 				/>
 
 				{state.error ? (
@@ -116,6 +93,30 @@ export const List = () => {
 				onSelect={(listId) => {
 					state.setActiveListId(listId);
 					setListsModalOpen(false);
+				}}
+				showDelete={
+					!!state.activeList &&
+					!!state.currentUserId &&
+					state.activeList.ownerId === state.currentUserId
+				}
+				deleteDisabled={state.saving || !state.activeListId}
+				onDeleteList={() => {
+					if (!state.activeList) return;
+					Alert.alert(
+						"Obrisi listu",
+						`Da li sigurno zelis da obrises listu \"${state.activeList.name}\"?`,
+						[
+							{ text: "Odustani", style: "cancel" },
+							{
+								text: "Obrisi",
+								style: "destructive",
+								onPress: () => {
+									state.deleteActiveList().catch(() => undefined);
+									setListsModalOpen(false);
+								},
+							},
+						],
+					);
 				}}
 			/>
 

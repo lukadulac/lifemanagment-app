@@ -146,6 +146,19 @@ export const shoppingListStyles = StyleSheet.create({
 		justifyContent: "center",
 	},
 	primaryBtnText: { color: "#0B1220", fontWeight: "900" },
+	dangerBtn: {
+		height: 40,
+		borderWidth: 1,
+		borderColor: "#7F1D1D",
+		borderRadius: 10,
+		backgroundColor: "#1F1012",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	dangerBtnSpaced: {
+		marginTop: 10,
+	},
+	dangerBtnText: { color: "#FCA5A5", fontWeight: "800" },
 	listOption: {
 		height: 42,
 		borderRadius: 10,

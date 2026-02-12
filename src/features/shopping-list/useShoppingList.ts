@@ -101,6 +101,31 @@ export function useShoppingList() {
 		return () => unsubscribe();
 	}, [activeListId, refreshItems]);
 
+	useEffect(() => {
+		if (!activeListId) return;
+		const unsubscribe = shoppingListService.subscribeToListMembers(activeListId, () => {
+			refreshMembers(activeListId).catch(() => undefined);
+			refreshLists().catch(() => undefined);
+		});
+		return () => unsubscribe();
+	}, [activeListId, refreshMembers, refreshLists]);
+
+	useEffect(() => {
+		if (!activeListId) return;
+		const unsubscribe = shoppingListService.subscribeToListMeta(activeListId, () => {
+			refreshLists().catch(() => undefined);
+		});
+		return () => unsubscribe();
+	}, [activeListId, refreshLists]);
+
+	useEffect(() => {
+		if (!currentUserId) return;
+		const unsubscribe = shoppingListService.subscribeToUserMemberships(currentUserId, () => {
+			refreshLists().catch(() => undefined);
+		});
+		return () => unsubscribe();
+	}, [currentUserId, refreshLists]);
+
 	const createList = useCallback(async () => {
 		const trimmed = newListName.trim();
 		if (!trimmed) return false;

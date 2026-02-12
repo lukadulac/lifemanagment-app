@@ -10,10 +10,7 @@ type Props = {
 	onOpenCreate: () => void;
 	onOpenJoin: () => void;
 	onOpenMembers: () => void;
-	onDeleteList: () => void;
 	membersDisabled?: boolean;
-	deleteDisabled?: boolean;
-	showDelete?: boolean;
 };
 
 export function ShoppingTopBar({
@@ -22,10 +19,7 @@ export function ShoppingTopBar({
 	onOpenCreate,
 	onOpenJoin,
 	onOpenMembers,
-	onDeleteList,
 	membersDisabled,
-	deleteDisabled,
-	showDelete,
 }: Props) {
 	return (
 		<View style={styles.topRow}>
@@ -47,16 +41,6 @@ export function ShoppingTopBar({
 			<Pressable style={styles.actionBtn} onPress={onOpenMembers} disabled={membersDisabled}>
 				<Text style={styles.actionBtnText}>Clanovi</Text>
 			</Pressable>
-
-			{showDelete ? (
-				<Pressable
-					style={[styles.actionBtn, styles.actionBtnDanger]}
-					onPress={onDeleteList}
-					disabled={deleteDisabled}
-				>
-					<Text style={[styles.actionBtnText, styles.actionBtnDangerText]}>Obrisi</Text>
-				</Pressable>
-			) : null}
 		</View>
 	);
 }

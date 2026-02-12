@@ -295,4 +295,64 @@ export const shoppingListService = {
 			supabase.removeChannel(channel);
 		};
 	},
+
+	subscribeToListMembers(listId: string, onChange: () => void) {
+		const channel = supabase
+			.channel(`shopping-list-members-${listId}`)
+			.on(
+				"postgres_changes",
+				{
+					event: "*",
+					schema: "public",
+					table: "shopping_list_members",
+					filter: `list_id=eq.${listId}`,
+				},
+				onChange,
+			)
+			.subscribe();
+
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	},
+
+	subscribeToUserMemberships(userId: string, onChange: () => void) {
+		const channel = supabase
+			.channel(`shopping-user-memberships-${userId}`)
+			.on(
+				"postgres_changes",
+				{
+					event: "*",
+					schema: "public",
+					table: "shopping_list_members",
+					filter: `user_id=eq.${userId}`,
+				},
+				onChange,
+			)
+			.subscribe();
+
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	},
+
+	subscribeToListMeta(listId: string, onChange: () => void) {
+		const channel = supabase
+			.channel(`shopping-list-meta-${listId}`)
+			.on(
+				"postgres_changes",
+				{
+					event: "*",
+					schema: "public",
+					table: "shopping_lists",
+					filter: `id=eq.${listId}`,
+				},
+				onChange,
+			)
+			.subscribe();
+
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	},
 };
