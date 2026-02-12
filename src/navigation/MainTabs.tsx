@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import Fontisto from "@expo/vector-icons/Fontisto";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Account } from "../pages/Account";
 import { Dashboard } from "../pages/Dashboard";
+import { List } from "../pages/List";
 import { Money } from "../pages/Money";
-import { Time } from "../pages/Time";
 import { TimeTable } from "../pages/TimeTable";
 
 const Tab = createBottomTabNavigator();
@@ -43,11 +44,12 @@ export function MainTabs() {
 						case "Novac":
 							iconName = focused ? "wallet" : "wallet-outline";
 							break;
-						case "Time":
-							iconName = focused ? "time" : "time-outline";
-							break;
+						case "Spisak":
+							return (
+								<Fontisto name="shopping-basket" size={24} color={color} />
+							);
 						case "Vreme":
-							iconName = focused ? "calendar" : "calendar-outline";
+							iconName = focused ? "time" : "time-outline";
 							break;
 						case "Nalog":
 							iconName = focused ? "person" : "person-outline";
@@ -62,7 +64,7 @@ export function MainTabs() {
 		>
 			<Tab.Screen name="Dashboard" component={Dashboard} />
 			<Tab.Screen name="Novac" component={Money} />
-			<Tab.Screen name="Time" component={Time} />
+			<Tab.Screen name="Spisak" component={List} />
 			<Tab.Screen name="Vreme" component={TimeTable} />
 			<Tab.Screen name="Nalog" component={Account} />
 		</Tab.Navigator>
