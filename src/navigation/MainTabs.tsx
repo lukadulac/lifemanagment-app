@@ -7,7 +7,15 @@ import { List } from "../pages/List";
 import { Money } from "../pages/Money";
 import { TimeTable } from "../pages/TimeTable";
 
-const Tab = createBottomTabNavigator();
+export type MainTabParamList = {
+	Dashboard: undefined;
+	Novac: undefined;
+	Spisak: undefined;
+	Vreme: undefined;
+	Nalog: undefined;
+};
+
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function MainTabs() {
 	return (
