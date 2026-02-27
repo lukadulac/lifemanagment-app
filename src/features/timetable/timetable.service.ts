@@ -7,7 +7,6 @@ type CalendarEventRow = {
 	user_id: string;
 	title: string;
 	notes: string | null;
-	type: "obligation" | "task";
 	start_at: string;
 	end_at: string;
 };
@@ -31,7 +30,6 @@ function rowToCalendarItem(row: CalendarEventRow): CalendarItem {
 		id: row.id,
 		title: row.title,
 		notes: row.notes ?? undefined,
-		type: row.type,
 		start: row.start_at,
 		end: row.end_at,
 	};
@@ -42,7 +40,8 @@ function toDbPayload(item: CalendarItem, userId: string) {
 		user_id: userId,
 		title: item.title,
 		notes: item.notes ?? null,
-		type: item.type,
+
+		type: "obligation" as const,
 		start_at: item.start,
 		end_at: item.end,
 	};
@@ -66,7 +65,9 @@ export const timetableService = {
 
 		if (error) throw error;
 
-		return normalizeItems((data ?? []).map((row) => rowToCalendarItem(row as CalendarEventRow)));
+		return normalizeItems(
+			(data ?? []).map((row) => rowToCalendarItem(row as CalendarEventRow)),
+		);
 	},
 
 	async upsertEvent(item: CalendarItem): Promise<CalendarItem> {
@@ -97,11 +98,16 @@ export const timetableService = {
 
 		if (error) throw error;
 
-		return normalizeItems((data ?? []).map((row) => rowToCalendarItem(row as CalendarEventRow)));
+		return normalizeItems(
+			(data ?? []).map((row) => rowToCalendarItem(row as CalendarEventRow)),
+		);
 	},
 
 	async deleteEvent(id: string): Promise<void> {
-		const { error } = await supabase.from("calendar_events").delete().eq("id", id);
+		const { error } = await supabase
+			.from("calendar_events")
+			.delete()
+			.eq("id", id);
 		if (error) throw error;
 	},
 };

@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Modal, Pressable, Text, View } from "react-native";
-import { TYPE_META } from "../timetable.constants";
 import { timeTableStyles as styles } from "../timetable.styles";
 import type { CalendarItem } from "../timetable.types";
 import { formatDayHeadline, formatEventRange, startOfDay } from "../timetable.utils";
@@ -21,7 +20,6 @@ export function EventDetailsModal({
 }: EventDetailsModalProps) {
 	if (!item) return null;
 
-	const meta = TYPE_META[item.type];
 	const startDate = new Date(item.start);
 	const dayLabel = Number.isNaN(startDate.getTime())
 		? ""
@@ -38,10 +36,6 @@ export function EventDetailsModal({
 						<Pressable onPress={onClose} style={styles.detailsCloseBtn}>
 							<Ionicons name="close" size={18} color="#E5E7EB" />
 						</Pressable>
-					</View>
-
-					<View style={[styles.detailsTypeBadge, { borderColor: meta.color, backgroundColor: meta.bg }]}>
-						<Text style={[styles.detailsTypeBadgeText, { color: meta.color }]}>{meta.label}</Text>
 					</View>
 
 					<Text style={styles.detailsMetaText}>{dayLabel}</Text>

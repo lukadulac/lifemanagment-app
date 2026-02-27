@@ -1,7 +1,14 @@
-import React from "react";
-import { StyleProp, Text, TextInput, View, ViewStyle } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+	Pressable,
+	StyleProp,
+	Text,
+	TextInput,
+	View,
+	ViewStyle,
+} from "react-native";
 import { moneyStyles as s } from "../money.styles";
-import { MonthKey, lastMonths } from "../utils/moneyFormat";
+import { MonthKey } from "../utils/moneyFormat";
 import { MonthDropdown } from "./MonthDropdown";
 
 type Props = {
@@ -21,7 +28,32 @@ export function MonthlyIncomeCard({
 	onSave,
 	cardStyle,
 }: Props) {
-	const months = lastMonths(6);
+	const [incomeInput, setIncomeInput] = useState(
+		String(Number.isFinite(monthlyIncome) ? Math.trunc(monthlyIncome) : 0),
+	);
+
+	useEffect(() => {
+		setIncomeInput(
+			String(Number.isFinite(monthlyIncome) ? Math.trunc(monthlyIncome) : 0),
+		);
+	}, [monthlyIncome, month]);
+
+	const parsedIncome = useMemo(() => {
+		if (!incomeInput.trim()) return 0;
+		return Number(incomeInput);
+	}, [incomeInput]);
+
+	const isDirty = Number.isFinite(parsedIncome) && parsedIncome !== monthlyIncome;
+
+	const handleIncomeChange = (text: string) => {
+		const sanitized = text.replace(/[^\d]/g, "");
+		setIncomeInput(sanitized);
+	};
+
+	const handleSave = () => {
+		if (!isDirty) return;
+		onSave(parsedIncome);
+	};
 
 	return (
 		<View style={[s.card, cardStyle]}>
@@ -52,11 +84,23 @@ export function MonthlyIncomeCard({
 
 					<View style={{ gap: 10 }}>
 						<TextInput
-							keyboardType="numeric"
-							value={String(Number.isFinite(monthlyIncome) ? monthlyIncome : 0)}
-							onChangeText={(t) => onSave(t ? Number(t) : 0)}
+							keyboardType="number-pad"
+							value={incomeInput}
+							onChangeText={handleIncomeChange}
+							onBlur={handleSave}
+							onSubmitEditing={handleSave}
+							placeholder="0"
+							placeholderTextColor="#6B7280"
 							style={s.input}
 						/>
+
+						<Pressable
+							onPress={handleSave}
+							disabled={!isDirty}
+							style={[s.btnBlue, !isDirty && s.btnDisabled]}
+						>
+							<Text style={s.btnText}>Sačuvaj prihod</Text>
+						</Pressable>
 					</View>
 				</View>
 			</View>

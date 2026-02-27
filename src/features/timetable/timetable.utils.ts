@@ -95,6 +95,13 @@ export function formatHour(hour: number): string {
 	return `${pad2(hour)}:00`;
 }
 
+export function formatMinuteOfDay(totalMinutes: number): string {
+	const clamped = Math.max(0, Math.min(24 * 60, totalMinutes));
+	const hour = Math.floor(clamped / 60);
+	const minute = clamped % 60;
+	return `${pad2(hour)}:${pad2(minute)}`;
+}
+
 export function formatEventRange(item: CalendarItem): string {
 	const start = new Date(item.start);
 	const end = new Date(item.end);
@@ -103,12 +110,16 @@ export function formatEventRange(item: CalendarItem): string {
 		return "";
 	}
 
+	const startLabel = `${pad2(start.getHours())}:${pad2(start.getMinutes())}`;
+
 	let endHour = end.getHours();
-	if (toDayKey(end) !== toDayKey(start) && endHour === 0) {
+	let endMinute = end.getMinutes();
+	if (toDayKey(end) !== toDayKey(start) && endHour === 0 && endMinute === 0) {
 		endHour = 24;
+		endMinute = 0;
 	}
 
-	return `${pad2(start.getHours())}:00 - ${pad2(endHour)}:00`;
+	return `${startLabel} - ${pad2(endHour)}:${pad2(endMinute)}`;
 }
 
 export function sortByStart(a: CalendarItem, b: CalendarItem): number {
@@ -125,13 +136,13 @@ export function clampHour(hour: number): number {
 
 export function createDraft(dayKey: string, initialHour: number): DraftItem {
 	const safeStart = clampHour(initialHour);
+	const startMinute = safeStart * 60;
 	return {
 		title: "",
 		notes: "",
-		type: "obligation",
 		dayKey,
-		startHour: safeStart,
-		endHour: Math.min(safeStart + 1, 24),
+		startMinute,
+		endMinute: Math.min(startMinute + 60, 24 * 60),
 	};
 }
 
@@ -147,7 +158,6 @@ export function isCalendarItem(value: unknown): value is CalendarItem {
 		typeof value.title === "string" &&
 		typeof value.start === "string" &&
 		typeof value.end === "string" &&
-		(value.type === "obligation" || value.type === "task") &&
 		(value.notes === undefined || typeof value.notes === "string")
 	);
 }

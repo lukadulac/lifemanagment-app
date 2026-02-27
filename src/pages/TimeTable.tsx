@@ -9,7 +9,7 @@ import { EventEditorModal } from "../features/timetable/components/EventEditorMo
 import { MonthCalendarView } from "../features/timetable/components/MonthCalendarView";
 import { WeekCalendarView } from "../features/timetable/components/WeekCalendarView";
 import {
-	END_HOURS,
+	DAY_END_MINUTE,
 	LEGACY_STORAGE_KEY,
 } from "../features/timetable/timetable.constants";
 import { timetableService } from "../features/timetable/timetable.service";
@@ -206,30 +206,33 @@ export const TimeTable = () => {
 		const start = new Date(item.start);
 		const end = new Date(item.end);
 
-		const startHour = Number.isNaN(start.getTime()) ? 9 : start.getHours();
-		let endHour = Number.isNaN(end.getTime()) ? startHour + 1 : end.getHours();
+		const startMinute = Number.isNaN(start.getTime())
+			? 9 * 60
+			: start.getHours() * 60 + start.getMinutes();
+		let endMinute = Number.isNaN(end.getTime())
+			? startMinute + 60
+			: end.getHours() * 60 + end.getMinutes();
 
 		if (
 			!Number.isNaN(start.getTime()) &&
 			!Number.isNaN(end.getTime()) &&
 			toDayKey(end) !== toDayKey(start) &&
-			endHour === 0
+			endMinute === 0
 		) {
-			endHour = 24;
+			endMinute = DAY_END_MINUTE;
 		}
 
-		if (endHour <= startHour) {
-			endHour = Math.min(startHour + 1, 24);
+		if (endMinute <= startMinute) {
+			endMinute = Math.min(startMinute + 60, DAY_END_MINUTE);
 		}
 
 		setDraft({
 			id: item.id,
 			title: item.title,
 			notes: item.notes ?? "",
-			type: item.type,
 			dayKey: toDayKey(Number.isNaN(start.getTime()) ? new Date() : start),
-			startHour,
-			endHour,
+			startMinute,
+			endMinute,
 		});
 		setFormError(null);
 		setModalOpen(true);
@@ -256,22 +259,26 @@ export const TimeTable = () => {
 			return;
 		}
 
-		if (draft.endHour <= draft.startHour) {
+		if (draft.endMinute <= draft.startMinute) {
 			setFormError("Kraj mora biti posle pocetka.");
 			return;
 		}
 
 		const start = fromDayKey(draft.dayKey);
-		start.setHours(draft.startHour, 0, 0, 0);
+		start.setHours(
+			Math.floor(draft.startMinute / 60),
+			draft.startMinute % 60,
+			0,
+			0,
+		);
 
 		const end = fromDayKey(draft.dayKey);
-		end.setHours(draft.endHour, 0, 0, 0);
+		end.setHours(Math.floor(draft.endMinute / 60), draft.endMinute % 60, 0, 0);
 
 		const payload: CalendarItem = {
 			id: draft.id ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`,
 			title,
 			notes: draft.notes.trim() || undefined,
-			type: draft.type,
 			start: start.toISOString(),
 			end: end.toISOString(),
 		};
@@ -365,18 +372,6 @@ export const TimeTable = () => {
 		setSelectedDate(startOfDay(new Date()));
 	};
 
-	const endHourOptions = useMemo(
-		() => END_HOURS.filter((hour) => hour > draft.startHour),
-		[draft.startHour],
-	);
-
-	useEffect(() => {
-		if (endHourOptions.length === 0) return;
-		if (!endHourOptions.includes(draft.endHour)) {
-			setDraft((prev) => ({ ...prev, endHour: endHourOptions[0] }));
-		}
-	}, [draft.endHour, endHourOptions]);
-
 	if (loading) {
 		return (
 			<View style={[styles.page, styles.center]}>
@@ -455,6 +450,7 @@ export const TimeTable = () => {
 						selectedDayKey={selectedDayKey}
 						todayKey={todayKey}
 						onSelectDate={(date) => setSelectedDate(startOfDay(date))}
+						onOpenCreate={openCreate}
 						onOpenDetails={(item) => setDetailsItem(item)}
 					/>
 				) : null}
@@ -492,13 +488,11 @@ export const TimeTable = () => {
 				visible={modalOpen}
 				draft={draft}
 				formError={formError}
-				endHourOptions={endHourOptions}
 				saving={saving}
 				onClose={closeModal}
 				onSave={saveDraft}
 				onDelete={deleteDraft}
 				onTitleChange={(title) => setDraft((prev) => ({ ...prev, title }))}
-				onTypeChange={(type) => setDraft((prev) => ({ ...prev, type }))}
 				onPrevDay={() =>
 					setDraft((prev) => ({
 						...prev,
@@ -511,21 +505,21 @@ export const TimeTable = () => {
 						dayKey: toDayKey(addDays(fromDayKey(prev.dayKey), 1)),
 					}))
 				}
-				onStartHourChange={(startHour) =>
+				onStartMinuteChange={(startMinute) =>
 					setDraft((prev) => {
 						const nextEnd =
-							prev.endHour <= startHour
-								? Math.min(startHour + 1, 24)
-								: prev.endHour;
+							prev.endMinute <= startMinute
+								? Math.min(startMinute + 60, DAY_END_MINUTE)
+								: prev.endMinute;
 						return {
 							...prev,
-							startHour,
-							endHour: nextEnd,
+							startMinute,
+							endMinute: nextEnd,
 						};
 					})
 				}
-				onEndHourChange={(endHour) =>
-					setDraft((prev) => ({ ...prev, endHour }))
+				onEndMinuteChange={(endMinute) =>
+					setDraft((prev) => ({ ...prev, endMinute }))
 				}
 				onNotesChange={(notes) => setDraft((prev) => ({ ...prev, notes }))}
 			/>

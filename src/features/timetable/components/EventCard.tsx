@@ -1,6 +1,5 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { TYPE_META } from "../timetable.constants";
 import { timeTableStyles as styles } from "../timetable.styles";
 import type { CalendarItem } from "../timetable.types";
 import { formatEventRange } from "../timetable.utils";
@@ -11,16 +10,14 @@ type EventCardProps = {
 };
 
 export function EventCard({ item, onPress }: EventCardProps) {
-	const meta = TYPE_META[item.type];
-
 	return (
 		<Pressable
 			onPress={onPress}
 			style={[
 				styles.eventCard,
 				{
-					backgroundColor: meta.bg,
-					borderColor: meta.color,
+					backgroundColor: "rgba(52,211,153,0.14)",
+					borderColor: "#34D399",
 				},
 			]}
 		>
@@ -28,7 +25,6 @@ export function EventCard({ item, onPress }: EventCardProps) {
 				<Text style={styles.eventTitle} numberOfLines={1}>
 					{item.title}
 				</Text>
-				<Text style={[styles.eventType, { color: meta.color }]}>{meta.label}</Text>
 			</View>
 
 			<Text style={styles.eventTime}>{formatEventRange(item)}</Text>

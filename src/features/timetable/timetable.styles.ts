@@ -441,6 +441,19 @@ export const timeTableStyles = StyleSheet.create({
 		fontSize: 13,
 		fontWeight: "800",
 	},
+	timePickerGrid: {
+		flexDirection: "row",
+		gap: 10,
+	},
+	timePickerColumn: {
+		flex: 1,
+	},
+	timePickerColumnTitle: {
+		color: "#9CA3AF",
+		fontSize: 12,
+		fontWeight: "700",
+		marginBottom: 6,
+	},
 	inlineTimePickerList: {
 		maxHeight: 160,
 	},
@@ -455,6 +468,9 @@ export const timeTableStyles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: "#34D399",
 	},
+	inlineTimePickerOptionDisabled: {
+		opacity: 0.45,
+	},
 	inlineTimePickerOptionText: {
 		color: "#FFFFFF",
 		fontSize: 14,
@@ -462,6 +478,9 @@ export const timeTableStyles = StyleSheet.create({
 	},
 	inlineTimePickerOptionTextSelected: {
 		color: "#34D399",
+	},
+	inlineTimePickerOptionTextDisabled: {
+		color: "#6B7280",
 	},
 	pickerWrap: {
 		borderWidth: 1,
