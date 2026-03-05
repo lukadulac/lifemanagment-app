@@ -17,6 +17,7 @@ import { SavingsCard } from "../features/money/components/SavingsCard";
 import { useMoneyManager } from "../features/money/hooks/useMoneyManager";
 
 export function Money() {
+	//TODO:Razmisli o logici za money managment i meseci - da li ce se meseci menjati i kako ce se cuvati stanje za svaki mesec
 	const { width } = useWindowDimensions();
 	const isLg = width >= 1024;
 
