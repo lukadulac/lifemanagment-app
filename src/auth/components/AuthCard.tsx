@@ -17,8 +17,8 @@ export function AuthCard() {
 	const subtitle = useMemo(() => {
 		if (mode === "reset") return "Unesi email i poslaćemo ti link za reset";
 		return mode === "login"
-			? "Login da upravljaš novcem & vremenom"
-			: "Kreni da upravljaš novcem & vremenom";
+			? "Loginuj se da upravljaš svojim životom"
+			: "Kreni da upravljaš svojim životom";
 	}, [mode]);
 
 	return (
